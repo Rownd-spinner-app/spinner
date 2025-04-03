@@ -497,14 +497,14 @@ window.toggleHide = toggleHide;
 window.removeMember = removeMember;
 window.hideWinner = hideWinner;
 
-// Initial Rownd team data
+// Initial Rownd team data with reliable avatar URLs
 const rowndTeamData = [
-    { name: "Rachel", photoUrl: "https://raw.githubusercontent.com/rachradulo/spinner/main/rachel_headshot@2x.png" },
-    { name: "Matt", photoUrl: "https://raw.githubusercontent.com/rachradulo/spinner/main/matt_headshot@2x.png" },
-    { name: "Davon", photoUrl: "https://raw.githubusercontent.com/rachradulo/spinner/main/davon.png" },
-    { name: "Rob", photoUrl: "https://raw.githubusercontent.com/rachradulo/spinner/main/rob_headshot@2x.png" },
-    { name: "Racheal", photoUrl: "https://raw.githubusercontent.com/rachradulo/spinner/main/racheal_headshot@2x.png" },
-    { name: "Bobby", photoUrl: "https://raw.githubusercontent.com/rachradulo/spinner/main/bobby_headshot@2x.png" }
+    { name: "Rachel", photoUrl: "https://ui-avatars.com/api/?name=Rachel&background=6e3ff3&color=fff&size=200&bold=true" },
+    { name: "Matt", photoUrl: "https://ui-avatars.com/api/?name=Matt&background=5931c2&color=fff&size=200&bold=true" },
+    { name: "Davon", photoUrl: "https://ui-avatars.com/api/?name=Davon&background=9171f8&color=fff&size=200&bold=true" },
+    { name: "Rob", photoUrl: "https://ui-avatars.com/api/?name=Rob&background=4a2a94&color=fff&size=200&bold=true" },
+    { name: "Racheal", photoUrl: "https://ui-avatars.com/api/?name=Racheal&background=b299ff&color=fff&size=200&bold=true" },
+    { name: "Bobby", photoUrl: "https://ui-avatars.com/api/?name=Bobby&background=6e3ff3&color=fff&size=200&bold=true" }
 ];
 
 // Function to initialize the spinner with Rownd team
