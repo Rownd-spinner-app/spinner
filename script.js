@@ -15,22 +15,30 @@ let currentRotation = 0;
 
 // DOM Elements
 const spinner = document.querySelector('.spinner');
+const selectedPhoto = document.getElementById('selected-photo');
+const selectedName = document.getElementById('selected-name');
+const spinButton = document.getElementById('spin-button');
 const memberNameInput = document.getElementById('member-name');
 const memberPhotoInput = document.getElementById('member-photo');
 const addMemberButton = document.getElementById('add-member');
 const teamList = document.getElementById('team-list');
 const winnerAnnouncement = document.getElementById('winner-announcement');
 
-// Sound effects (using the URLs defined in index.html)
-const spinSound = new Audio(window.SPIN_SOUND_URL || 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-const selectSound = new Audio(window.SELECT_SOUND_URL || 'https://assets.mixkit.co/active_storage/sfx/1434/1434-preview.mp3');
+// Create spinner segments container
+const spinnerSegments = document.createElement('div');
+spinnerSegments.className = 'spinner-segments';
+spinner.insertBefore(spinnerSegments, spinner.firstChild);
+
+// Sound effects
+const spinSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+const selectSound = new Audio('https://assets.mixkit.co/active_storage/sfx/1434/1434-preview.mp3');
 
 // Event Listeners
 addMemberButton.addEventListener('click', addTeamMember);
+spinButton.addEventListener('click', spin);
 
 // Add team member
 function addTeamMember() {
-    console.log('Adding team member...'); // Debug log
     const name = memberNameInput.value.trim();
     const photoFile = memberPhotoInput.files[0];
 
@@ -42,7 +50,6 @@ function addTeamMember() {
     const photoUrl = URL.createObjectURL(photoFile);
     const member = new TeamMember(name, photoUrl);
     teamMembers.push(member);
-    console.log('Added new member:', member); // Debug log
 
     // Clear inputs
     memberNameInput.value = '';
@@ -60,13 +67,11 @@ function degToRad(degrees) {
 
 // Update spinner segments
 function updateSpinner() {
-    console.log('Updating spinner...'); // Debug log
     spinner.innerHTML = ''; // Clear previous segments and button
     winnerAnnouncement.textContent = ''; // Clear winner text
 
     const activeMembers = teamMembers.filter(m => !m.isHidden);
     const numSegments = activeMembers.length;
-    console.log(`Active members: ${numSegments}`); // Debug log
 
     if (numSegments === 0) {
         const placeholder = document.createElement('div');
@@ -80,7 +85,7 @@ function updateSpinner() {
     }
 
     const segmentAngle = 360 / numSegments;
-    console.log(`Segment angle: ${segmentAngle} degrees`); // Debug log
+    const colors = ['var(--rownd-purple)', 'var(--rownd-purple-dark)'];
 
     activeMembers.forEach((member, index) => {
         const segment = document.createElement('div');
@@ -91,6 +96,7 @@ function updateSpinner() {
         const endAngle = degToRad(segmentAngle * (index + 1) - 90);
 
         // Calculate points for SVG path
+        // Center point is (50,50), radius is 50
         const startX = 50 + 50 * Math.cos(startAngle);
         const startY = 50 + 50 * Math.sin(startAngle);
         const endX = 50 + 50 * Math.cos(endAngle);
@@ -99,7 +105,6 @@ function updateSpinner() {
         // Create SVG path for perfect pie slice
         const largeArcFlag = segmentAngle <= 180 ? 0 : 1;
         const pathData = `M 50,50 L ${startX},${startY} A 50,50 0 ${largeArcFlag} 1 ${endX},${endY} Z`;
-        console.log(`Segment ${index} path: ${pathData}`); // Debug log
         
         segment.style.clipPath = `path('${pathData}')`;
         segment.style.webkitClipPath = `path('${pathData}')`;
@@ -107,7 +112,7 @@ function updateSpinner() {
         // Create and style content container
         const content = document.createElement('div');
         content.className = 'segment-content';
-        content.style.background = index % 2 === 0 ? 'var(--rownd-purple)' : 'var(--rownd-purple-dark)';
+        content.style.background = colors[index % colors.length];
 
         // Calculate center angle for content positioning
         const centerAngle = segmentAngle * index + (segmentAngle / 2);
@@ -120,7 +125,7 @@ function updateSpinner() {
         img.style.transform = `rotate(${-centerAngle}deg)`;
         content.appendChild(img);
 
-        // Add label
+        // Add label with improved positioning
         const label = document.createElement('div');
         label.className = 'segment-label';
         label.textContent = member.name;
@@ -138,7 +143,6 @@ function updateSpinner() {
 
         segment.appendChild(content);
         spinner.appendChild(segment);
-        console.log(`Added segment for ${member.name}`); // Debug log
     });
 
     createSpinButton(false);
@@ -147,7 +151,7 @@ function updateSpinner() {
 // Function to create and add the spin button
 function createSpinButton(isDisabled) {
     const existingButton = spinner.querySelector('.spin-button');
-    if (existingButton) existingButton.remove();
+    if (existingButton) existingButton.remove(); // Remove if exists
 
     const button = document.createElement('button');
     button.className = 'spin-button';
@@ -159,7 +163,6 @@ function createSpinButton(isDisabled) {
 
 // Update team list UI
 function updateTeamList() {
-    console.log('Updating team list...'); // Debug log
     teamList.innerHTML = '';
     teamMembers.forEach(member => {
         const div = document.createElement('div');
@@ -193,7 +196,6 @@ function removeMember(memberId) {
 
 // Spin functionality
 function spin() {
-    console.log('Spin initiated...'); // Debug log
     if (isSpinning) return;
 
     const activeMembers = teamMembers.filter(m => !m.isHidden);
@@ -204,22 +206,24 @@ function spin() {
     }
 
     isSpinning = true;
-    winnerAnnouncement.textContent = '';
+    winnerAnnouncement.textContent = ''; // Clear previous winner
     const spinButtonElement = spinner.querySelector('.spin-button');
     if(spinButtonElement) spinButtonElement.disabled = true;
-    spinSound.play().catch(err => console.log('Sound play error:', err));
+    spinSound.play();
 
     // Calculate target angle
     const segmentAngle = 360 / numSegments;
     const targetIndex = Math.floor(Math.random() * numSegments);
     const selectedMember = activeMembers[targetIndex];
-    console.log(`Selected member: ${selectedMember.name}`); // Debug log
 
-    // Calculate final rotation
+    // Calculate the angle so the pointer points to the middle of the target segment
+    // Pointer is at 0 degrees (top). Target segment middle angle = segmentAngle * targetIndex + segmentAngle / 2
+    // We want spinner rotation + target middle angle = 360 * n (or 0)
     const targetRotation = 360 - (segmentAngle * targetIndex + segmentAngle / 2);
-    const extraRotations = 360 * (5 + Math.floor(Math.random() * 4));
+
+    // Add random extra rotations and ensure it spins significantly
+    const extraRotations = 360 * (5 + Math.floor(Math.random() * 4)); // 5-8 extra rotations
     const finalRotation = currentRotation + extraRotations + targetRotation;
-    console.log(`Final rotation: ${finalRotation} degrees`); // Debug log
 
     // Apply rotation
     spinner.style.transition = 'transform 4s cubic-bezier(0.25, 1, 0.5, 1)';
@@ -230,17 +234,22 @@ function spin() {
 
     // After animation ends
     setTimeout(() => {
-        selectSound.play().catch(err => console.log('Sound play error:', err));
+        selectSound.play();
         winnerAnnouncement.textContent = `${selectedMember.name} wins!`;
-        console.log('Spin completed!'); // Debug log
+
+        // Optional: Add highlight to winner segment
+        // This requires more complex logic to identify the correct segment element
 
         isSpinning = false;
         if(spinButtonElement) spinButtonElement.disabled = false;
+
+        // Reset transition for potential immediate next spin (though unlikely)
         spinner.style.transition = 'none';
-    }, 4000);
+
+    }, 4000); // Match CSS transition duration
 }
 
-// Add flash animation CSS
+// Add flash animation CSS (if not already added)
 if (!document.getElementById('spinner-animations')) {
     const style = document.createElement('style');
     style.id = 'spinner-animations';
@@ -260,9 +269,8 @@ if (!document.getElementById('spinner-animations')) {
     document.head.appendChild(style);
 }
 
-// Make functions globally available
-window.toggleHide = toggleHide;
-window.removeMember = removeMember;
-
 // Initial setup
-updateSpinner(); 
+updateSpinner();
+
+// Initialize with placeholder
+selectedPhoto.src = 'https://via.placeholder.com/150?text=Add+Members';
